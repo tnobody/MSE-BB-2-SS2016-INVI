@@ -1,0 +1,29 @@
+{
+  "name": "mse-bb-2-ss2016-invi",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "compile": "tsc",
+    "start": "npm run compile && live-server --open=app/"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/tnobody/MSE-BB-2-SS2016-INVI.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/tnobody/MSE-BB-2-SS2016-INVI/issues"
+  },
+  "homepage": "https://github.com/tnobody/MSE-BB-2-SS2016-INVI#readme",
+  "devDependencies": {
+    "live-server": "^1.0.0",
+    "typescript": "^1.8.10",
+    "typings": "^0.8.1"
+  },
+  "dependencies": {
+    "d3": "^3.5.16"
+  }
+}

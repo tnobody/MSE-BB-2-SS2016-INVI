@@ -1,0 +1,15 @@
+{
+    "compilerOptions": {
+        "module": "system",
+        "target": "es5",
+        "noImplicitAny": false,
+        "sourceMap": false
+    },
+    "files": [
+        "typings/browser.d.ts",
+        "app/src/main.ts"
+    ],
+    "exclude": [
+        "node_modules"
+    ]
+}
