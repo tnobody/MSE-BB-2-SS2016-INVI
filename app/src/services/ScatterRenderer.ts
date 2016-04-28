@@ -39,17 +39,19 @@ export class ScatterRenderer implements CarRenderer {
     }
 
     constructor(private cars:Car[]) {
+        console.log(cars);
         this.xScale = linearScaler([
-            0, d3.max(cars, c => c.acceleration)
+            d3.min(cars, c => c.acceleration || 0), d3.max(cars, c => c.acceleration || 0)
         ], [0, this.plotWidth]);
         this.yScale = linearScaler([
-            d3.max(cars, c => c.engineDisplacement), 0
+            d3.max(cars, c => c.milesPerGallon || 0), 0
         ], [0, this.plotHeight]);
 
-        this.rScale = linearScaler([0, d3.max(cars, c => c.horsepower)], [1, 10]);
+        this.rScale = linearScaler([0, d3.max(cars, c => c.horsepower || 0)], [1, 10]);
 
         this.xAxis = d3.svg.axis()
             .scale(this.xScale)
+            .tickSize(1, 5)
             .orient('bottom');
 
         this.yAxis = d3.svg.axis()
@@ -71,9 +73,9 @@ export class ScatterRenderer implements CarRenderer {
             .data(this.cars)
             .enter()
             .append('circle')
-            .attr('cx', (c:Car) => this.xScale(c.acceleration) + this.plotMargin.left)
-            .attr('cy', (c:Car) => this.yScale(c.engineDisplacement) + this.plotMargin.top)
-            .attr('r', (c:Car) => this.rScale(c.horsepower | 1))
+            .attr('cx', (c:Car) => this.xScale(c.acceleration || 0) + this.plotMargin.left)
+            .attr('cy', (c:Car) => this.yScale(c.milesPerGallon || 0) + this.plotMargin.top)
+            .attr('r', (c:Car) => this.rScale(c.horsepower || 1))
             .attr('fill', (c:Car) => this.colorMap[c.origin])
             .style('cursor', 'pointer')
             .on('mouseover', this.onMouseoverCircle)
@@ -100,10 +102,11 @@ export class ScatterRenderer implements CarRenderer {
             .call(this.yAxis)
             .append('text')
             .style('width', '150px')
+            .style('text-anchor', 'end')
             .attr('x', '-150')
             .attr('y', '20')
             .attr('transform', Utils.rotate(-90))
-            .text('Engine displacement')
+            .text('Miles per gallon')
 
         const legend = svg.append('g')
             .selectAll('g')
@@ -116,15 +119,15 @@ export class ScatterRenderer implements CarRenderer {
 
 
         legend.append('text')
-            .attr('x', this.width-this.plotMargin.right-30)
-            .attr('y', (d,i) => this.plotMargin.top + (i * 20))
+            .attr('x', this.width - this.plotMargin.right - 30)
+            .attr('y', (d, i) => this.plotMargin.top + (i * 20))
             .text(d => d.name);
 
         legend.append('rect')
             .attr('width', 10)
             .attr('height', 10)
-            .attr('x', this.width-this.plotMargin.right -45)
-            .attr('y', (d,i) => this.plotMargin.top + (i * 20) -10)
+            .attr('x', this.width - this.plotMargin.right - 45)
+            .attr('y', (d, i) => this.plotMargin.top + (i * 20) - 10)
             .style('fill', d => d.color);
 
     }
