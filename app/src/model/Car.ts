@@ -15,7 +15,7 @@ export interface CsvCar {
     'Cylinders':string;
     'Engine displacement':string;
     'Horsepower':string;
-    "Miles per gallon":string;
+    'Miles per gallon':string;
     'Model Year':string;
     'Name':string;
     'Origin':string;

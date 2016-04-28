@@ -1,6 +1,7 @@
-import * as d3 from "d3";
+import d3 from "d3";
 import {CsvCar, Car} from "model/Car";
-import {TableDefiniton} from 'model/TableDefinition';
+import {TableRenderer} from 'services/TableRenderer';
+import {ScatterRenderer} from 'services/ScatterRenderer';
 
 const ssv = d3.dsv(';', 'text/plain');
 
@@ -21,26 +22,10 @@ const csvToCar = (csv:CsvCar):Car => ({
 
 ssv('resources/cars.csv', (data:CsvCar[]) => {
     const cars = data.map(csvToCar);
-    console.log(cars,data);
-    const table = d3.select('body').append('table');
-    const thead = table.append('thead');
-    const tbody = table.append('tbody');
-    thead.append('tr').selectAll('th')
-        .data(TableDefiniton.columns)
-        .enter()
-        .append('th')
-        .text(c => c.title)
 
-    const rows = tbody.selectAll('tr')
-        .data(cars)
-        .enter()
-        .append('tr');
+    const scatterRenderer = new ScatterRenderer(cars);
+    scatterRenderer.render(d3.select('body'));
 
-    const cells = rows.selectAll('td')
-        .data((row:Car) => TableDefiniton.columns.map(c => {
-            return {column: c.title, value: row[c.field]};
-        }))
-        .enter()
-        .append('td')
-        .html(d => d.value)
+    const tableRenderer = new TableRenderer(cars);
+    tableRenderer.render(d3.select('body'));
 });

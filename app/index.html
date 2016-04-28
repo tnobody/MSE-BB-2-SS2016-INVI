@@ -5,17 +5,18 @@
     <link rel="stylesheet" href="style.css">
     <script src="../node_modules/systemjs/dist/system.js"></script>
     <script>
-        // set our baseURL reference path
+        var BasePackageFormat = {format: 'register', defaultExtension: 'js', globals:{d3:'d3'}};
         System.config({
             baseURL: 'src',
+            meta: {
+                d3: { exports: 'd3', format:'global'}
+            },
             packages: {
-              model: {
-                  format: 'register',
-                  defaultExtension: 'js'
-              }
+                model: BasePackageFormat,
+                services: BasePackageFormat
             },
             map: {
-                'd3': '../node_modules/d3/d3.min.js'
+                'd3': '../node_modules/d3/d3.js'
             }
         });
 
