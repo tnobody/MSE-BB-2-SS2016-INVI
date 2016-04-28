@@ -1,0 +1,17 @@
+body {
+    font-family: Arial;
+}
+
+table {
+    border-collapse: collapse;
+    width: 100%;
+}
+
+th, td {
+    padding:3px;
+    border: 1px solid black;
+}
+
+th {
+    background-color: green;
+}
