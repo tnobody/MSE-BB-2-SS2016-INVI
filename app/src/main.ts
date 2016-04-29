@@ -17,7 +17,8 @@ const csvToCar = (csv:CsvCar):Car => ({
     modelYear: convertToFloat(csv['Model year']) + 1900, // jap this is dirty ;)
     name: csv['Name'],
     origin: OriginMap[parseInt(csv['Origin'])],
-    weight: convertToFloat(csv['Vehicle weight'])
+    weight: convertToFloat(csv['Vehicle weight']),
+    selected:false
 } as Car);
 
 ssv('resources/cars.csv', (data:CsvCar[]) => {
@@ -28,4 +29,7 @@ ssv('resources/cars.csv', (data:CsvCar[]) => {
 
     const tableRenderer = new TableRenderer(cars);
     tableRenderer.render(d3.select('body'));
+
+    scatterRenderer
+        .onSelection(s => tableRenderer.rows.classed('brushed',c => c.selected));
 });

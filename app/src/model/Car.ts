@@ -1,4 +1,5 @@
 export interface Car {
+    selected:boolean
     acceleration:number;
     cylinders:number;
     engineDisplacement:number;

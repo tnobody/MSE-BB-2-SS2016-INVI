@@ -2,11 +2,17 @@ import {CarRenderer, Utils} from 'services/CarRenderer';
 import {Selection} from 'd3';
 import d3 from 'd3';
 import {Car} from '../model/Car';
+import {BrushContainer} from "./BrushContainer";
 
 const linearScaler = (domain:number[], range:number[]) => (d3.scale
     .linear()
     .domain(domain)
     .range(range))
+
+const coordinates = (extendArr:[number, number]|[[number,number],[number,number]]) => ({
+    p1: {x: extendArr[0][0], y: extendArr[0][1]},
+    p2: {x: extendArr[1][0], y: extendArr[1][1]},
+})
 
 export class ScatterRenderer implements CarRenderer {
 
@@ -16,8 +22,8 @@ export class ScatterRenderer implements CarRenderer {
         'Japan': 'blue'
     }
 
-    private plotWidth = 800;
-    private plotHeight = 400;
+    public plotWidth = 800;
+    public plotHeight = 400;
 
     private xScale;
     private yScale;
@@ -26,9 +32,15 @@ export class ScatterRenderer implements CarRenderer {
     private xAxis;
     private yAxis;
 
-    private plotMargin = Utils.margin(50, 50, 50, 50);
+    private brush:BrushContainer;
+
+    private circles:Selection<Car>;
+
+    public plotMargin = Utils.margin(50, 50, 50, 50);
 
     private tooltip:Selection<Car>;
+
+    private onSelectionListener:{(s:Selection<Car>):void}[] = [];
 
     get width() {
         return this.plotWidth + this.plotMargin.right + this.plotMargin.left
@@ -39,7 +51,6 @@ export class ScatterRenderer implements CarRenderer {
     }
 
     constructor(private cars:Car[]) {
-        console.log(cars);
         this.xScale = linearScaler([
             d3.min(cars, c => c.acceleration || 0), d3.max(cars, c => c.acceleration || 0)
         ], [0, this.plotWidth]);
@@ -61,6 +72,13 @@ export class ScatterRenderer implements CarRenderer {
         this.tooltip = d3.select('body').append('div')
             .attr('class', 'tooltip')
             .style('opacity', 0);
+
+        this.brush = new BrushContainer(this);
+        this.brush.brush.on('brush', this.onBrush);
+    }
+
+    onSelection(l:(s:Selection<Car>)=>void) {
+        this.onSelectionListener.push(l);
     }
 
     render(selection:Selection<any>) {
@@ -69,7 +87,12 @@ export class ScatterRenderer implements CarRenderer {
             .attr('width', this.width)
             .attr('height', this.height);
 
-        svg.selectAll('circle')
+        svg.append('g')
+            .attr('class', 'brush')
+            .call(this.brush.brush);
+
+
+        this.circles = svg.selectAll('circle')
             .data(this.cars)
             .enter()
             .append('circle')
@@ -91,7 +114,7 @@ export class ScatterRenderer implements CarRenderer {
             .style('text-anchor', 'end')
             .attr('x', `${this.plotWidth}px`)
             .attr('y', '-5')
-            .text('Acceleration')
+            .text('Acceleration');
 
         svg.append('g')
             .attr('class', 'axis y-axis')
@@ -106,7 +129,7 @@ export class ScatterRenderer implements CarRenderer {
             .attr('x', '-150')
             .attr('y', '20')
             .attr('transform', Utils.rotate(-90))
-            .text('Miles per gallon')
+            .text('Miles per gallon');
 
         const legend = svg.append('g')
             .selectAll('g')
@@ -115,7 +138,7 @@ export class ScatterRenderer implements CarRenderer {
                 {name: 'USA', color: 'red'},
                 {name: 'Japan', color: 'blue'},
             ]).enter()
-            .append('g')
+            .append('g');
 
 
         legend.append('text')
@@ -130,6 +153,19 @@ export class ScatterRenderer implements CarRenderer {
             .attr('y', (d, i) => this.plotMargin.top + (i * 20) - 10)
             .style('fill', d => d.color);
 
+    }
+
+    onBrush = (...args:any[]) => {
+        const brushArea = coordinates(this.brush.brush.extent());
+        this.circles.each(c => c.selected = false);
+        const selection =this.circles.filter((c:Car) => {
+                const x = this.xScale(c.acceleration || 0) + this.plotMargin.left;
+                const y = this.yScale(c.milesPerGallon || 0) + this.plotMargin.top;
+                return x >= brushArea.p1.x && y >= brushArea.p1.y && x <= brushArea.p2.x && y <= brushArea.p2.y;
+            })
+            .each(c => c.selected = true)
+        this.circles.classed('brushed', c => c.selected);
+        this.onSelectionListener.forEach(l => l(selection));
     }
 
     onMouseoverCircle = (c:Car) => {
