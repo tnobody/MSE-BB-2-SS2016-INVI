@@ -4,16 +4,6 @@ import d3 from 'd3';
 import {Car} from '../model/Car';
 import {BrushContainer} from "./BrushContainer";
 
-const linearScaler = (domain:number[], range:number[]) => (d3.scale
-    .linear()
-    .domain(domain)
-    .range(range))
-
-const coordinates = (extendArr:[number, number]|[[number,number],[number,number]]) => ({
-    p1: {x: extendArr[0][0], y: extendArr[0][1]},
-    p2: {x: extendArr[1][0], y: extendArr[1][1]},
-})
-
 export class ScatterRenderer implements CarRenderer {
 
     private colorMap = {
@@ -22,8 +12,8 @@ export class ScatterRenderer implements CarRenderer {
         'Japan': 'blue'
     }
 
-    public plotWidth = 800;
-    public plotHeight = 400;
+    public plotWidth = 400;
+    public plotHeight = 300;
 
     private xScale;
     private yScale;
@@ -32,7 +22,7 @@ export class ScatterRenderer implements CarRenderer {
     private xAxis;
     private yAxis;
 
-    private brush:BrushContainer;
+    private brushContainer:BrushContainer;
 
     private circles:Selection<Car>;
 
@@ -50,15 +40,19 @@ export class ScatterRenderer implements CarRenderer {
         return this.plotHeight + this.plotMargin.bottom + this.plotMargin.top
     }
 
-    constructor(private cars:Car[]) {
-        this.xScale = linearScaler([
+    get brush() {
+        return this.brushContainer.brush;
+    }
+
+    constructor(private cars:Car[],private selection:Selection<Car>) {
+        this.xScale = Utils.linearScaler([
             d3.min(cars, c => c.acceleration || 0), d3.max(cars, c => c.acceleration || 0)
         ], [0, this.plotWidth]);
-        this.yScale = linearScaler([
+        this.yScale = Utils.linearScaler([
             d3.max(cars, c => c.milesPerGallon || 0), 0
         ], [0, this.plotHeight]);
 
-        this.rScale = linearScaler([0, d3.max(cars, c => c.horsepower || 0)], [1, 10]);
+        this.rScale = Utils.linearScaler([0, d3.max(cars, c => c.horsepower || 0)], [1, 10]);
 
         this.xAxis = d3.svg.axis()
             .scale(this.xScale)
@@ -73,24 +67,23 @@ export class ScatterRenderer implements CarRenderer {
             .attr('class', 'tooltip')
             .style('opacity', 0);
 
-        this.brush = new BrushContainer(this);
-        this.brush.brush.on('brush', this.onBrush);
+        this.brushContainer = new BrushContainer(this);
+        this.brushContainer.brush.on('brush', this.onBrush);
     }
 
     onSelection(l:(s:Selection<Car>)=>void) {
         this.onSelectionListener.push(l);
     }
 
-    render(selection:Selection<any>) {
-        const svg = selection.append('svg')
+    render() {
+        const svg = this.selection.append('svg')
             .attr('class', 'scatterplot')
             .attr('width', this.width)
             .attr('height', this.height);
 
         svg.append('g')
             .attr('class', 'brush')
-            .call(this.brush.brush);
-
+            .call(this.brushContainer.brush);
 
         this.circles = svg.selectAll('circle')
             .data(this.cars)
@@ -140,7 +133,6 @@ export class ScatterRenderer implements CarRenderer {
             ]).enter()
             .append('g');
 
-
         legend.append('text')
             .attr('x', this.width - this.plotMargin.right - 30)
             .attr('y', (d, i) => this.plotMargin.top + (i * 20))
@@ -156,14 +148,15 @@ export class ScatterRenderer implements CarRenderer {
     }
 
     onBrush = (...args:any[]) => {
-        const brushArea = coordinates(this.brush.brush.extent());
+        const brushArea = Utils.coordinates(this.brushContainer.brush.extent());
+        console.log(brushArea);
         this.circles.each(c => c.selected = false);
-        const selection =this.circles.filter((c:Car) => {
+        const selection = this.circles.filter((c:Car) => {
                 const x = this.xScale(c.acceleration || 0) + this.plotMargin.left;
                 const y = this.yScale(c.milesPerGallon || 0) + this.plotMargin.top;
                 return x >= brushArea.p1.x && y >= brushArea.p1.y && x <= brushArea.p2.x && y <= brushArea.p2.y;
             })
-            .each(c => c.selected = true)
+            .each(c => c.selected = true);
         this.circles.classed('brushed', c => c.selected);
         this.onSelectionListener.forEach(l => l(selection));
     }

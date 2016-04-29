@@ -17,10 +17,10 @@ export class TableRenderer implements CarRenderer{
     rows:Selection<Car>;
     cells:Selection<CellData>;
     
-    constructor(private cars:Car[]) {}
+    constructor(private cars:Car[],private selection:Selection<Car>) {}
 
-    public render(selection:Selection<any>) {
-        this.table = selection.append('table');
+    public render() {
+        this.table = this.selection.append('table');
         this.thead = this.table.append('thead');
         this.tbody = this.table.append('tbody');
         this.headerRow = this.thead.append('tr').selectAll('th')

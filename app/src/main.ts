@@ -2,6 +2,7 @@ import d3 from "d3";
 import {CsvCar, Car} from "model/Car";
 import {TableRenderer} from 'services/TableRenderer';
 import {ScatterRenderer} from 'services/ScatterRenderer';
+import {HistogramRenderer} from 'services/HistogramRenderer';
 
 const ssv = d3.dsv(';', 'text/plain');
 
@@ -24,12 +25,23 @@ const csvToCar = (csv:CsvCar):Car => ({
 ssv('resources/cars.csv', (data:CsvCar[]) => {
     const cars = data.map(csvToCar);
 
-    const scatterRenderer = new ScatterRenderer(cars);
-    scatterRenderer.render(d3.select('body'));
+    const scatterRenderer = new ScatterRenderer(cars,d3.select('body'));
+    scatterRenderer.render();
 
-    const tableRenderer = new TableRenderer(cars);
-    tableRenderer.render(d3.select('body'));
+    const historgramRenderer = new HistogramRenderer(cars,d3.select('body'));
+    historgramRenderer.render();
+
+    const tableRenderer = new TableRenderer(cars, d3.select('body'));
+    tableRenderer.render();
 
     scatterRenderer
-        .onSelection(s => tableRenderer.rows.classed('brushed',c => c.selected));
+        .onSelection(s => {
+            tableRenderer.rows.classed('brushed',c => c.selected);
+            if(!scatterRenderer.brush.empty()) {
+                historgramRenderer.updateHistogramData(c => c.selected);
+            } else {
+                historgramRenderer.updateHistogramData(c => true);
+            }
+            historgramRenderer.render();
+        });
 });
