@@ -6,7 +6,8 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "compile": "tsc",
-    "start": "npm run compile && live-server --open=app/"
+    "start": "npm run compile && live-server --open=app/",
+    "postinstall": "cp node_modules/d3/d3.min.js app/d3.min.js && cp node_modules/systemjs/dist/system.js app/system.js"
   },
   "repository": {
     "type": "git",

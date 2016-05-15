@@ -6,7 +6,7 @@ const ssv = d3.dsv(';', 'text/plain');
 
 const OriginMap = {1:'USA', 2:'Europe', 3:'Japan'};
 
-const convertToFloat = (s:string) => parseFloat(s.replace(',','.'));
+const convertToFloat = (s:string) => parseFloat(s.replace(',','.')) || null;
 const csvToCar = (csv:CsvCar):Car => ({
     acceleration: convertToFloat(csv['Acceleration']),
     cylinders: convertToFloat(csv['Cylinders']),
